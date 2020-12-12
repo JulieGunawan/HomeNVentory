@@ -5,7 +5,7 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -15,7 +15,7 @@
     <body>
         <h1>Welcome to Home nVentory</h1>
         <h2>Registration</h2>
-        <form method="post" action="login">
+        <form method="post" action="registration">
             
             First Name: <input type="text" name="firstName"> <br>
             Last Name: <input type="text" name="lastName" > <br>
@@ -25,11 +25,13 @@
             <input type="hidden" name="action" value="register">
             <input type="submit" value="Register">  <br>
         
-            <form method="post" action="login">
-                <input type="hidden" name="action" value="cancel">
-                <input type="submit" value="Cancel">
-             </form>
+            
         </form>
         
+        <form method="post" action="registration">
+                <input type="hidden" name="action" value="cancel">
+                <input type="submit" value="Cancel">
+        </form>
+        <p>${message}</p>
     </body>
 </html>

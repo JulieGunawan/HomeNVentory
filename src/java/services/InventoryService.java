@@ -41,17 +41,34 @@ public class InventoryService {
         return items;
     }
     
-    public void insert(String itemname, double price, int categoryId, User owner) throws Exception {
+    /**
+     * to insert a new item to user's list
+     * @param itemname name of new item going to be added
+     * @param price of new item going to be added 
+     * @param categoryId of new item going to be added 
+     * @param owner of the item
+     * @throws Exception 
+     */
+    public void insert(String itemname, double price, Category category, User owner) throws Exception {
         ItemDB itemDB = new ItemDB();
         
         Item item = new Item(0, itemname, price);
-        Category category = new Category(categoryId);
+        
         item.setCategory(category);
         item.setOwner(owner);
-        
+        category.getItemList().add(item);
+        owner.getItemList().add(item);
         itemDB.insert(item);
     }
     
+    /**
+     * to edit the item from user's list
+     * @param itemId item Id that is selected to be edited
+     * @param itemname new name of edited item 
+     * @param price new price of edited item
+     * @param categoryId category ID of edited item
+     * @throws Exception 
+     */
     public void update(int itemId, String itemname, double price, int categoryId) throws Exception {
         ItemDB itemDB = new ItemDB();
         
@@ -63,7 +80,17 @@ public class InventoryService {
         item.setCategory(category);
         
         itemDB.update(item);
-        
-       
+              
+    }
+    
+    /**
+     * to delete selected item from user's list
+     * @param itemId item ID to be deleted
+     * @throws Exception 
+     */
+    public void delete(int itemId) throws Exception{
+        ItemDB itemDB = new ItemDB();  
+        Item item = itemDB.get(itemId);
+        itemDB.delete(item);
     }
 }

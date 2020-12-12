@@ -6,7 +6,9 @@
 package services;
 
 import dataaccess.UserDB;
+import java.util.ArrayList;
 import java.util.List;
+import models.Item;
 import models.Role;
 import models.User;
 
@@ -70,17 +72,47 @@ public class AccountService {
     
       /**
      * insert new user from registration into database
-     * @param User the new user information
-     * @param Role of new user, assigned to regular user, roleId=2, when new user is created through registration
+     * @param email: the new user's email
+     * @param firstName the new user's first name
+     * @param lastName the new user's last name
+     * @param password the new user's password
      * @throws Exception 
      */
-    public void insert (String email, String firstName, String lastName, String password) throws Exception {
+    public void insert (String email, int roleId, String firstName, String lastName, String password) throws Exception {
         UserDB userDB = new UserDB();
         boolean active = true;
         User user = new User(email, active, firstName, lastName, password);
-        Role role = new Role(2);
-        
+        Role role = new Role(roleId);
+        List<Item> items= new ArrayList<Item>();
+        user.setItemList(items);
         user.setRole(role);
         userDB.insert(user);
+    }
+    
+     /**
+     * update account from account page into database, including deactivation
+     * @param email: the updated user's email
+     * @param status : the updated user's status
+     * @param firstName the updated user's first name
+     * @param lastName the updated user's last name
+     * @param password the updated user's password
+     * @throws Exception 
+     */
+    public void update (String email, boolean status, String firstName, String lastName, String password) throws Exception{
+        UserDB userDB = new UserDB();
+        User user = userDB.get(email);
+        List<Item> items = user.getItemList();
+        Role role = user.getRole();
+        user.setRole(role);
+        user.setActive(status);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setPassword(password);
+        userDB.update(user);
+    }
+    
+    public void delete(String email) throws Exception{
+        UserDB userDB = new UserDB();
+        userDB.delete(email);
     }
 }

@@ -7,6 +7,7 @@ package servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -14,6 +15,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import models.Item;
+import models.Role;
 import models.User;
 import services.AccountService;
 import services.InventoryService;
@@ -39,16 +42,23 @@ public class AccountServlet extends HttpServlet {
             throws ServletException, IOException {
             
         AccountService as = new AccountService();
+        HttpSession session = request.getSession(); 
+        //String action = (String) session.getAttribute("action");
+        String action = request.getParameter("action");
         
-        try{
-            HttpSession session = request.getSession(); 
-        
-            String email = (String) session.getAttribute("email");
-            User user = as.get(email);
-            request.setAttribute("user", user);
-        }
-        catch (Exception e){
-            Logger.getLogger(AccountServlet.class.getName()).log(Level.SEVERE, null, e);
+        if (action!= null){ 
+            if (action.equals("update")) {
+                try{    
+                    String email = (String) session.getAttribute("email");
+                    User user = as.get(email);
+                    request.setAttribute("user", user);
+                   // session = request.getSession();
+                }
+                catch (Exception e){
+                    Logger.getLogger(AccountServlet.class.getName()).log(Level.SEVERE, null, e);
+                }
+        //String action = request.getParameter("action");      
+            }    
         }
         getServletContext().getRequestDispatcher("/WEB-INF/account.jsp").
                 forward(request, response);
@@ -67,16 +77,78 @@ public class AccountServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession();
-        String email = (String) session.getAttribute("email");
+        
+        String newEmail = request.getParameter("email"); //original email before updated
+        String userEmail = request.getParameter("originalemail"); //get the new email, if it's updated  
+        String firstName = request.getParameter("firstName"); //get first name of user, if it's updated
+        String lastName = request.getParameter("lastName"); //get last name of user if it's updated
+        String password = request.getParameter("password"); //get the password if it's changed
         
         AccountService as = new AccountService();
-        InventoryService is = new InventoryService();
         
+        String action = request.getParameter("action");       
         
-           getServletContext().getRequestDispatcher("/WEB-INF/account.jsp").
+        //If cancel button is pressed, go back to inventory page
+        if(action !=null && action.equalsIgnoreCase("cancel")){
+            response.sendRedirect("inventory");
+            return;
+        }        
+               
+        try{
+            if (action!= null && action.equals("deactivate")){   
+                User deactUser = as.get(userEmail);
+                String first = deactUser.getFirstName();
+                String last = deactUser.getLastName();
+                String pass = deactUser.getPassword();
+                as.update(userEmail, false, first, last, pass);
+                response.sendRedirect("login");
+                return;
+            }  
+        } catch (Exception e){
+             Logger.getLogger(AccountServlet.class.getName()).log(Level.SEVERE, null, e);
+        }
+        
+        User newUser=null; //store original information of user
+        String message="";          
+        
+        if (newEmail == null){
+            message ="Please enter your email";
+            session.setAttribute("message", message);
+            doGet(request, response);  
+            return;
+        }
+           
+        try {
+            User originalUser = as.get(userEmail);
+            newUser = as.get(newEmail);
+            
+            if(newUser==null){
+                message ="Please fill all the form";
+                session.setAttribute("message", message);
+                doGet(request, response);
+                return;
+            }          
+            
+            if (action !=null && action.equals("save")){
+                if(newUser.equals(originalUser)){                       
+                      as.update(newEmail, true, firstName, lastName, password);
+                    } else {
+                        List<Item> itemList = originalUser.getItemList();
+                        as.delete(originalUser.getEmail());
+                        as.insert(newEmail, 2, firstName, lastName, password);
+                        newUser = as.get(newEmail);
+                        newUser.setItemList(itemList);
+                    }
+                    response.sendRedirect("inventory");
+                    return;
+            }
+                       
+        } catch (Exception e){
+            Logger.getLogger(AccountServlet.class.getName()).log(Level.SEVERE, null, e);
+        }
+         
+        getServletContext().getRequestDispatcher("/WEB-INF/account.jsp").
                 forward(request, response);
     }
-
-  
 
 }

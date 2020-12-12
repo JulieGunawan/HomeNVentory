@@ -39,18 +39,12 @@ public class LoginServlet extends HttpServlet {
          
        if (request.getParameter("logout")!=null){
             session.invalidate();
-       
             String message="logout";
-            request.setAttribute("message", message);  
-            session = request.getSession();
-       }
-       
-       if(session.getAttribute("email")!=null){
-           response.sendRedirect("account");
-       }
-       else
-            getServletContext().getRequestDispatcher("/WEB-INF/login.jsp").
-                forward(request,response);
+            request.setAttribute("message", message); 
+            session = request.getSession();           
+       }       
+       getServletContext().getRequestDispatcher("/WEB-INF/login.jsp").
+            forward(request,response);
     }
 
     /**
@@ -67,37 +61,56 @@ public class LoginServlet extends HttpServlet {
       
         String action = request.getParameter("action");
         String email=request.getParameter("email");
-            String password=request.getParameter("password");
+        String password=request.getParameter("password");
+        HttpSession session = request.getSession();
+        
+        AccountService as = new AccountService();
+        User user = as.login(email, password);
+        String message="";
+        if (email.isEmpty() || email==null || password.isEmpty() || password == null){
+            message="empty";
+            session.setAttribute("message",message);
+            response.sendRedirect("login");
+            return;
+        }
+              
+        if (action!= null){
+            session.setAttribute("email", email);
+            switch(action)
+            {
+                case "signin":
+                    if (user==null){
+                        message = "notfound";
+                        session.setAttribute("message", message);
+                        response.sendRedirect("login");
+                       return;
+                    }
 
-            AccountService as = new AccountService();
-            User user = as.login(email, password);
-        if (action!= null && action.equals("signin")){
+                    else if (user.getActive()){
+                        session.setAttribute("user",user);
+                        if (user.getRole().getRoleId()==1){                               
+                            response.sendRedirect("admin");
+                            return;
+                        }
+                        else {
+                            response.sendRedirect("inventory");                               
+                            return;
+                        }
+                    }
+                    else{
+                        message="inactive";
+                        session.setAttribute("message", message);
+                        response.sendRedirect("login");
+                        return;
+                    }
+                        
+                case "register":
+                    response.sendRedirect("registration");
+                    return;
+            }
+        }
             
-            if (user==null){
-                String message = "notfound";
-                request.setAttribute("message", message);
-                getServletContext().getRequestDispatcher("/WEB-INF/login.jsp").
-                    forward(request, response);
-                return;
-            }
-        
-            if (user.getRole().getRoleId()==1){
-                response.sendRedirect("admin");
-            }
-            else {
-                response.sendRedirect("account");
-            }
-        }
-        else if (action!= null && action.equals("register")){
-            response.sendRedirect("registration");
-        }
-    
-        
         getServletContext().getRequestDispatcher("/WEB-INF/login.jsp").
-                    forward(request, response);
-    
+                    forward(request, response);   
     }
-
-   
-
 }

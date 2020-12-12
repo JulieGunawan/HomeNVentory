@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import models.Role;
 import models.User;
 import services.AccountService;
@@ -35,7 +36,9 @@ public class RegistrationServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-       
+        
+        //HttpSession session=request.getSession();
+       // String action = request.getParameter("action");
         getServletContext().getRequestDispatcher("/WEB-INF/registration.jsp").
                 forward(request, response);
     }
@@ -51,45 +54,52 @@ public class RegistrationServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-       
+          
+        HttpSession session=request.getSession();
+       // String action = (String) session.getAttribute("action");
+        
         String action = request.getParameter("action");
         String message="";
-        if (action.equalsIgnoreCase("cancel")){
-            
-            doGet(request, response);
-            return;
-        }
-        
-        String email=request.getParameter("email");
-        String firstName = request.getParameter("firstName");
-        String lastName = request.getParameter("lastName");
-        String password=request.getParameter("password");
-        boolean active = true;
         
         AccountService as = new AccountService();
+                
+        if (action.equalsIgnoreCase("cancel")){
+            message="";
+            session.setAttribute("message", message);
+            response.sendRedirect("login");
+            return;
+        }
               
-        if (action!= null && action.equals("register")){
-            
-            if (email!=null || firstName!=null || lastName!= null || password!=null ||
-                    email !="" || firstName !="" || lastName !="" || password !=""){
+        String firstName = request.getParameter("firstName");
+        String lastName = request.getParameter("lastName");
+        String email=request.getParameter("email");
+        String password=request.getParameter("password");
+                
+        boolean active = true;      
+        
+        if (action!= null && action.equals("register")){    
+            if (firstName.isEmpty() || firstName==null || lastName.isEmpty() || lastName == null || 
+                email.isEmpty() || email == null || password.isEmpty() || password == null) 
+            {
+                message = "Please fill all the fields";
+                request.setAttribute("message", message);
+                response.sendRedirect("registration");
+                return;
+            }
+            else {                
                 try{
-                    as.insert(email, firstName, lastName, password);
+                    as.insert(email, 2, firstName, lastName, password);
+                    message="create";
+                    session.setAttribute("message", message);
+                    response.sendRedirect("login");
+                    return;
                 } catch (Exception e){
                     Logger.getLogger(AccountServlet.class.getName()).log(Level.SEVERE, null, e);
-                }
-                
+                    }             
             }
-
         }
-        message="create";
-        request.setAttribute("message", message);
-        getServletContext().getRequestDispatcher("/WEB-INF/login.jsp").
-                forward(request, response);
-    
-    }
        
-    
-
- 
-
+        getServletContext().getRequestDispatcher("/WEB-INF/registration.jsp").
+                forward(request, response);   
+    }      
 }

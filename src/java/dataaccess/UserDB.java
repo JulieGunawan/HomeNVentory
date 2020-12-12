@@ -86,8 +86,7 @@ public class UserDB {
         try {
             trans.begin();
             em.merge(user);
-            trans.commit();
-            
+            trans.commit();            
         } catch (Exception e) {
             trans.rollback();
         } finally{

@@ -5,7 +5,7 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -21,52 +21,94 @@
                 <th>Category</th>
                 <th>Item Name</th>
                 <th>Price</th>
-                <th>Delete</th>
                 <th>Edit</th>
+                <th>Delete</th>
             </tr>
+          
             <c:forEach items="${items}" var="readItem">
-                <td>${readItem.category}</td>
-                
+                <tr>
+                    <td>
+                        <c:forEach items="${categories}" var="cat">
+                            <c:if test="${readItem.category.categoryId eq cat.categoryId}">
+                                ${cat.categoryId}
+                            </c:if>
+                        </c:forEach>
+                    </td>
+                    <td>${readItem.itemName}</td>  
+                    <td>${readItem.price}</td>
+
+                    <td>
+                        <form method ="post" action="inventory">
+                            <input type="hidden" name="itemID" value="${readItem.itemId}">
+                            <input type="hidden" name="action" value="edit">
+                            <input type="submit" value="Edit">
+                        </form>    
+                    </td>
+                    <td>
+                        <form method="post" action="inventory">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="itemID" value="${readItem.itemId}">
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                </tr>               
             </c:forEach>
         </table>
         
         <div>
             <c:if test="${empty editItem}">
                 <h1>Add Item</h1>
-                <form method="post" action="account">
+                <form method="post" action="inventory">
                     <select name="category">
-                        <c:forEach items="${items}" var="item">
-                            <option value="${item.itemId}">${item.itemName}</option>
+                        <c:forEach items="${categories}" var="cat">
+                            <option value="${cat.categoryId}">${cat.categoryName}
+                               
+                            </option>
                         </c:forEach>
-                    </select>
-                    <input type="text" name="itemname" placeholder="Item Name"> <br>
-                    <input type="text" name="price" placeholder="Price"> <br>                    
-                </form>                
-            </c:if>
-        </div>
-        <div>
-            <c:if test="${not empty editItem}">
-                <h1>Edit Item</h1>
-                <form method="post" action="account">
-                    <select name="category">
-                        <c:forEach items="${items}" var="item">
-                            <option value="${item.itemId}">
-                                <c:if test="${editItem.itemId eq item.itemId}"> selected  </c:if> ${item.itemName}
-                             </option>
-                        </c:forEach>
-                    </select>
-                    <input type="text" name="itemname" placeholder="Item Name" value="${editItem.itemName}"> <br>
-                    <input type="text" name="price" placeholder="Price" value="${editItem.price}"> <br>  
-                    
-                    <form method="post" action="user">
-                        <input type="hidden" name="action" value="saveItem">
-                        <input type=""
-                    </form>
+                    </select> <br>
+                    <input type="text" name="itemname" placeholder="Item Name" value=""> <br>
+                    <input type="text" name="price" placeholder="Price" value=""> <br>   <br>  
+                                   
+                    <input type="hidden" name="useremail" value="${user.email}">
+                    <input type="hidden" name="itemID" value="0">
+                    <input type="hidden" name="action" value="add">
+                    <input type="submit" value="Add">
                 </form>
             </c:if>
         </div>
+        
+        
+        <div>  
+            <c:if test="${not empty editItem}">
+            
+                <h1>Edit Item</h1> 
+                <form method="post" action="inventory">
+                    <select name="category">
+                        <c:forEach items="${categories}" var="cat">
+                            <option value="${cat.categoryId}"
+                                <c:if test="${editItem.category.categoryId eq cat.categoryId}">selected</c:if>>${cat.categoryName}
+                             </option>
+                        </c:forEach>
+                    </select> <br>
+                    <input type="text" name="itemname" placeholder="Item Name" value="${editItem.itemName}"><br>
+                    <input type="text" name="price" placeholder="Price" value="${editItem.price}"> <br>   <br>     
+               
+                    <input type="hidden" name="useremail" value="${user.email}">
+                    <input type="hidden" name="itemID" value="${editItem.itemId}">
+                    <input type="hidden" name="action" value="save">
+                    <input type="submit" value="Save">
+                </form>
+            </c:if>
+        </div>
+        
+        <form method="get" action="account">
+            <input type="hidden" name="useremail" value="${user.email}">
+            <input type="hidden" name="action" value="update">
+            <input type="submit" value="Edit Account">
+        </form>
          <br>
+        <%--to log out--%>
         <a href="login?logout">Log Out</a>
         
     </body>
-</html>
+    </html>

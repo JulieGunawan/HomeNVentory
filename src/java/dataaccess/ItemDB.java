@@ -55,12 +55,16 @@ public class ItemDB {
         EntityTransaction trans = em.getTransaction();
         
         try {
-            Category category = item.getCategory();
-            category.getItemList().add(item);
-            
+            Item newItem = item;
+            Category category = newItem.getCategory();
+            List<Item> items=category.getItemList();
+            items.add(newItem);
+            User user = newItem.getOwner();
             trans.begin();
-            em.persist(item);
+            em.persist(newItem);
+            em.merge(newItem);
             em.merge(category);
+            em.merge(user);
             
             trans.commit();
             
