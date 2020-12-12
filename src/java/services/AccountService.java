@@ -98,11 +98,11 @@ public class AccountService {
      * @param password the updated user's password
      * @throws Exception 
      */
-    public void update (String email, boolean status, String firstName, String lastName, String password) throws Exception{
+    public void update (String email, boolean status, String firstName, String lastName, String password, Role role) throws Exception{
         UserDB userDB = new UserDB();
         User user = userDB.get(email);
         List<Item> items = user.getItemList();
-        Role role = user.getRole();
+        //Role role = user.getRole();
         user.setRole(role);
         user.setActive(status);
         user.setFirstName(firstName);

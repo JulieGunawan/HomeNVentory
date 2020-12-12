@@ -17,10 +17,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.Category;
 import models.Item;
+import models.Role;
 import models.User;
 import services.AccountService;
 import services.CategoryService;
 import services.InventoryService;
+import services.RoleService;
 
 /**
  *
@@ -45,6 +47,7 @@ public class AdminServlet extends HttpServlet {
         AccountService as = new AccountService();
         CategoryService cs = new CategoryService();
         //InventoryService is = new InventoryService();
+        RoleService rs = new RoleService();
         
         HttpSession session = request.getSession();
         
@@ -58,10 +61,12 @@ public class AdminServlet extends HttpServlet {
             User user = as.get(email);
             List<User> users = as.getAll();
            // List<Item> items= user.getItemList();
+            List<Role> roles = rs.getAll();
             List<Category> categories=cs.getAll();
             request.setAttribute("user", user);
             request.setAttribute("users", users);
            // request.setAttribute("items", items);
+            request.setAttribute("roles", roles);
             request.setAttribute("categories", categories);
             session=request.getSession();
         }
@@ -92,8 +97,11 @@ public class AdminServlet extends HttpServlet {
         String firstName = request.getParameter("firstName"); //get first name of user, if it's updated
         String lastName = request.getParameter("lastName"); //get last name of user if it's updated
         String password = request.getParameter("password"); //get the password if it's changed
-        String categoryId= request.getParameter("catID");
-        String categoryName = request.getParameter("catName");
+        String categoryId= request.getParameter("catID"); //get category id
+        String categoryName = request.getParameter("catName"); //get category name
+        
+        String userRole = request.getParameter("role");
+        int userRoleId;
         
         User newUser=null; //store original information of user
         String message=""; //error message for user part
@@ -113,9 +121,10 @@ public class AdminServlet extends HttpServlet {
                 String first = reactUser.getFirstName();
                 String last = reactUser.getLastName();
                 String pass = reactUser.getPassword();
+                Role role = reactUser.getRole();
                 
                 if (!status)              
-                    as.update(userEmail, true, first, last, pass);
+                    as.update(userEmail, true, first, last, pass, role);
                     
                 response.sendRedirect("admin");
                 return;
@@ -162,7 +171,12 @@ public class AdminServlet extends HttpServlet {
                                 response.sendRedirect("admin");
                                 return;
                         }
-                        as.insert(newEmail, 2, firstName, lastName, password);
+                        if (userRole==null || userRole.isEmpty()){
+                            userRole = "2";
+                        }
+                        userRoleId = Integer.parseInt(userRole);
+                        
+                        as.insert(newEmail, userRoleId, firstName, lastName, password);
                         response.sendRedirect("admin");
                         return;
                         
@@ -172,13 +186,26 @@ public class AdminServlet extends HttpServlet {
                         }                
                         User originalUser = as.get(userEmail);
                        
+                        //updating user role
+                        if (userRole==null || userRole.isEmpty()){
+                            userRole = "2";
+                        }
+                        
+                        userRoleId = Integer.parseInt(userRole);
+                        Role role = originalUser.getRole();
+                        role.setRoleId(userRoleId);
+                        originalUser.setRole(role);
+                        
+                        //missing email
                         if(newEmail==null || newEmail.isEmpty()){
                             message ="Please complete the form";
                             session.setAttribute("message", message);
                             response.sendRedirect("admin");
                             return;
-                        }                            
-                        newUser = as.get(newEmail);                      
+                        }              
+                        
+                        newUser = as.get(newEmail); 
+                        //if email is changed, then delete the old account, and create a new account
                         if (newUser==null){
                             List<Item> itemList = originalUser.getItemList();
                             as.delete(originalUser.getEmail());
@@ -186,8 +213,10 @@ public class AdminServlet extends HttpServlet {
                             newUser = as.get(newEmail);
                             newUser.setItemList(itemList);
                         }
-                        else if(newUser.equals(originalUser)){                       
-                              as.update(newEmail, true, firstName, lastName, password);
+                        //if email doesn't change, then update all info
+                        else if(newUser.equals(originalUser)){       
+                            
+                            as.update(newEmail, true, firstName, lastName, password, role);
                         }                      
                         session.setAttribute("editUser", null);
                         response.sendRedirect("admin");

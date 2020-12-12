@@ -15,7 +15,12 @@ import models.Role;
  * @author 751682
  */
 public class RoleDB {
-    
+    /**
+     * to get a role from role ID
+     * @param id of the role to be searched
+     * @return role specified by ID
+     * @throws Exception 
+     */
     public Role get(int id) throws Exception  {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         
@@ -27,6 +32,11 @@ public class RoleDB {
         }
     }
     
+    /**
+     * get all the role listed in database
+     * @return the list of all roles available
+     * @throws Exception 
+     */
     public List<Role> getAll() throws Exception  {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         
@@ -35,7 +45,6 @@ public class RoleDB {
             return roles;
         } finally {
             em.close();
-        }
-        
+        }       
     }
 }

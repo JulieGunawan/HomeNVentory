@@ -100,7 +100,8 @@ public class AccountServlet extends HttpServlet {
                 String first = deactUser.getFirstName();
                 String last = deactUser.getLastName();
                 String pass = deactUser.getPassword();
-                as.update(userEmail, false, first, last, pass);
+                Role role = deactUser.getRole();
+                as.update(userEmail, false, first, last, pass, role);
                 response.sendRedirect("login");
                 return;
             }  
@@ -130,8 +131,9 @@ public class AccountServlet extends HttpServlet {
             }          
             
             if (action !=null && action.equals("save")){
-                if(newUser.equals(originalUser)){                       
-                      as.update(newEmail, true, firstName, lastName, password);
+                if(newUser.equals(originalUser)){  
+                      Role role = newUser.getRole();
+                      as.update(newEmail, true, firstName, lastName, password, role);
                     } else {
                         List<Item> itemList = originalUser.getItemList();
                         as.delete(originalUser.getEmail());

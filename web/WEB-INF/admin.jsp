@@ -22,6 +22,7 @@
                 <th>First Name</th>
                 <th>Last Name</th>
                 <th>Status</th>
+                <th>Role</th>
                 <th>Reactivate</th>
                 <th>Edit</th>
                 <th>Delete</th>
@@ -33,6 +34,11 @@
                     <td>${readUser.firstName}</td>
                     <td>${readUser.lastName}</td>
                     <td>${readUser.active}</td>
+                    <td>
+                        <c:forEach items="${roles}" var="readRole">
+                            <c:if test="${readUser.role.roleId eq readRole.roleId}"> ${readRole.roleName}</c:if>                           
+                        </c:forEach>
+                    </td>
                     <td>
                         <form method="post" action="admin">
                             <input type="hidden" name="useremail" value="${readUser.email}">
@@ -67,6 +73,11 @@
                 <input type="text" name="firstName" value="" placeholder="First Name"> <br>
                 <input type="text" name="lastName" value="" placeholder="Last Name"> <br>
                 <input type="text" name="password" value="" placeholder="Password"><br>
+                <select name="role">
+                    <c:forEach items="${roles}" var="readRole">
+                        <option value="${readRole.roleId}"> ${readRole.roleName} </option>
+                    </c:forEach>
+                </select><br>    
                 <input type="hidden" name="action" value="add">
                 <input type="submit" value="Save">
             </form>
@@ -81,6 +92,11 @@
                 <input type="text" name="firstName" value="${editUser.firstName}" placeholder="First Name"> <br>
                 <input type="text" name="lastName" value="${editUser.lastName}" placeholder="Last Name"> <br>
                 <input type="text" name="password" value="${editUser.password}" placeholder="Password"><br>
+                <select name="role">
+                    <c:forEach items="${roles}" var="readRole">
+                        <option value="${readRole.roleId}" <c:if test="${editUser.role.roleId eq readRole.roleId}">selected</c:if>> ${readRole.roleName} </option>
+                    </c:forEach>
+                </select><br>
                 <input type="hidden" name="originalemail" value="${editUser.email}"> <br>
                 <input type="hidden" name="action" value="update">
                 <input type="submit" value="Update">
